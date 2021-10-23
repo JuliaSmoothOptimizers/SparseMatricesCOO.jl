@@ -1,4 +1,10 @@
-function LinearAlgebra.mul!(C::StridedVecOrMat, A::AbstractSparseMatrixCOO, B::SparseArrays.DenseInputVecOrMat, α::Number, β::Number)
+function LinearAlgebra.mul!(
+  C::StridedVecOrMat,
+  A::AbstractSparseMatrixCOO,
+  B::SparseArrays.DenseInputVecOrMat,
+  α::Number,
+  β::Number,
+)
   size(A, 2) == size(B, 1) || throw(DimensionMismatch())
   size(A, 1) == size(C, 1) || throw(DimensionMismatch())
   size(B, 2) == size(C, 2) || throw(DimensionMismatch())
@@ -13,7 +19,13 @@ function LinearAlgebra.mul!(C::StridedVecOrMat, A::AbstractSparseMatrixCOO, B::S
 end
 
 for (T, t) in ((Adjoint, adjoint), (Transpose, transpose))
-  @eval function LinearAlgebra.mul!(C::StridedVecOrMat, xA::$T{<:Any,<:AbstractSparseMatrixCOO}, B::SparseArrays.DenseInputVecOrMat, α::Number, β::Number)
+  @eval function LinearAlgebra.mul!(
+    C::StridedVecOrMat,
+    xA::$T{<:Any, <:AbstractSparseMatrixCOO},
+    B::SparseArrays.DenseInputVecOrMat,
+    α::Number,
+    β::Number,
+  )
     A = xA.parent
     size(A, 2) == size(C, 1) || throw(DimensionMismatch())
     size(A, 1) == size(B, 1) || throw(DimensionMismatch())
@@ -30,7 +42,13 @@ for (T, t) in ((Adjoint, adjoint), (Transpose, transpose))
 end
 
 for (T, t) in ((Hermitian, adjoint), (Symmetric, transpose))
-  @eval function LinearAlgebra.mul!(C::StridedVecOrMat, xA::$T{<:Any,<:AbstractSparseMatrixCOO}, B::SparseArrays.DenseInputVecOrMat, α::Number, β::Number)
+  @eval function LinearAlgebra.mul!(
+    C::StridedVecOrMat,
+    xA::$T{<:Any, <:AbstractSparseMatrixCOO},
+    B::SparseArrays.DenseInputVecOrMat,
+    α::Number,
+    β::Number,
+  )
     A = xA.data
     size(A, 2) == size(B, 1) || throw(DimensionMismatch())
     size(A, 1) == size(C, 1) || throw(DimensionMismatch())
@@ -49,4 +67,3 @@ for (T, t) in ((Hermitian, adjoint), (Symmetric, transpose))
     C
   end
 end
-
