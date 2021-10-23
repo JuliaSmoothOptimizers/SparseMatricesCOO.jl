@@ -1,7 +1,7 @@
 ```@meta
-CurrentModule = JSOTemplate
+CurrentModule = SparseMatricesCOO
 ```
 
-# JSOTemplate
+# SparseMatricesCOO
 
-Documentation for [JSOTemplate](https://github.com/JuliaSmoothOptimizers/JSOTemplate.jl).
+Documentation for [SparseMatricesCOO](https://github.com/JuliaSmoothOptimizers/SparseMatricesCOO.jl).

@@ -55,9 +55,9 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using JSOTemplate
-            DocMeta.setdocmeta!(JSOTemplate, :DocTestSetup, :(using JSOTemplate); recursive=true)
-            doctest(JSOTemplate)'
+            using SparseMatricesCOO
+            DocMeta.setdocmeta!(SparseMatricesCOO, :DocTestSetup, :(using SparseMatricesCOO); recursive=true)
+            doctest(SparseMatricesCOO)'
       - run: julia --project=docs docs/make.jl
         env:
           JULIA_PKG_SERVER: ""
