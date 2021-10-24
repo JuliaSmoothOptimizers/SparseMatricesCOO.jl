@@ -120,7 +120,8 @@ SparseArrays.rowvals(A::SparseMatrixCOO) = getfield(A, :rows)
 rows(A::SparseMatrixCOO) = rowvals(A)
 columns(A::SparseMatrixCOO) = getfield(A, :cols)
 
-SparseArrays.findnz(A::AbstractSparseMatrixCOO{Tv, Ti}) where {Tv, Ti} = (rows(A), columns(A), values(A))
+SparseArrays.findnz(A::AbstractSparseMatrixCOO{Tv, Ti}) where {Tv, Ti} =
+  (rows(A), columns(A), values(A))
 SparseArrays.findnz(A::Transpose{Tv, T}) where {Tv, T <: AbstractSparseMatrixCOO} =
   (columns(A.parent), rows(A.parent), values(A.parent))
 SparseArrays.findnz(A::Adjoint{Tv, T}) where {Tv <: Real, T <: AbstractSparseMatrixCOO} =
@@ -269,5 +270,10 @@ convert(T::Type{<:UpperTriangular}, m::AbstractSparseMatrixCOO) =
 
 float(S::SparseMatrixCOO) =
   SparseMatrixCOO(size(S, 1), size(S, 2), copy(rows(S)), copy(columns(S)), float.(nonzeros(S)))
-complex(S::SparseMatrixCOO) =
-  SparseMatrixCOO(size(S, 1), size(S, 2), copy(rows(S)), copy(columns(S)), complex(copy(nonzeros(S))))
+complex(S::SparseMatrixCOO) = SparseMatrixCOO(
+  size(S, 1),
+  size(S, 2),
+  copy(rows(S)),
+  copy(columns(S)),
+  complex(copy(nonzeros(S))),
+)
