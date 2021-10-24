@@ -1,3 +1,5 @@
+export rows, columns
+
 """
     AbstractSparseMatrixCOO{Tv,Ti<:Integer} <: AbstractSparseMatrix{Tv,Ti}
 
@@ -90,7 +92,7 @@ julia> nonzeros(A)
 ```
 """
 SparseArrays.nonzeros(A::SparseMatrixCOO) = getfield(A, :vals)
-vals(A::SparseMatrixCOO) = nonzeros(A)
+Base.values(A::SparseMatrixCOO) = nonzeros(A)
 
 """
     rows(A::AbstractSparseMatrixCOO)
@@ -116,15 +118,15 @@ julia> rowvals(A)
 """
 SparseArrays.rowvals(A::SparseMatrixCOO) = getfield(A, :rows)
 rows(A::SparseMatrixCOO) = rowvals(A)
-cols(A::SparseMatrixCOO) = getfield(A, :cols)
+columns(A::SparseMatrixCOO) = getfield(A, :cols)
 
-SparseArrays.findnz(A::AbstractSparseMatrixCOO{Tv, Ti}) where {Tv, Ti} = (rows(A), cols(A), vals(A))
+SparseArrays.findnz(A::AbstractSparseMatrixCOO{Tv, Ti}) where {Tv, Ti} = (rows(A), columns(A), values(A))
 SparseArrays.findnz(A::Transpose{Tv, T}) where {Tv, T <: AbstractSparseMatrixCOO} =
-  (cols(A.parent), rows(A.parent), vals(A.parent))
+  (columns(A.parent), rows(A.parent), values(A.parent))
 SparseArrays.findnz(A::Adjoint{Tv, T}) where {Tv <: Real, T <: AbstractSparseMatrixCOO} =
-  (cols(A.parent), rows(A.parent), vals(A.parent))
+  (columns(A.parent), rows(A.parent), values(A.parent))
 SparseArrays.findnz(A::Adjoint{Tv, T}) where {Tv, T <: AbstractSparseMatrixCOO} =
-  (cols(A.parent), rows(A.parent), ajoint(copy((vals(A.parent)))))
+  (columns(A.parent), rows(A.parent), ajoint(copy((values(A.parent)))))
 
 # show
 
@@ -196,7 +198,7 @@ Base.show(io::IOContext, A::Hermitian{Tv, SparseMatrixCOO{Tv, Ti}}) where {Tv, T
 # copy
 
 Base.copy(A::AbstractSparseMatrixCOO) =
-  SparseMatrixCOO(size(A)..., copy(rows(A)), copy(cols(A)), copy(vals(A)))
+  SparseMatrixCOO(size(A)..., copy(rows(A)), copy(columns(A)), copy(values(A)))
 SparseArrays.sparse(A::AbstractSparseMatrixCOO) = copy(A)
 
 # convert to a SparseMatrixCOO
@@ -217,7 +219,7 @@ function Base.getindex(A::AbstractSparseMatrixCOO{Tv, Ti}, i0::Integer, i1::Inte
   (1 ≤ i0 ≤ m && 1 ≤ i1 ≤ n) || throw(BoundsError())
   val = zero(Tv)
   for k = 1:nnz(A)
-    i, j, v = S.rows[k], S.cols[k], S.vals[k]
+    i, j, v = A.rows[k], A.cols[k], A.vals[k]
     if i == i0 && j == i1
       val += v
     end
@@ -266,6 +268,6 @@ convert(T::Type{<:UpperTriangular}, m::AbstractSparseMatrixCOO) =
   istriu(m) ? T(m) : throw(ArgumentError("matrix cannot be represented as UpperTriangular"))
 
 float(S::SparseMatrixCOO) =
-  SparseMatrixCOO(size(S, 1), size(S, 2), copy(rows(S)), copy(cols(S)), float.(nonzeros(S)))
+  SparseMatrixCOO(size(S, 1), size(S, 2), copy(rows(S)), copy(columns(S)), float.(nonzeros(S)))
 complex(S::SparseMatrixCOO) =
-  SparseMatrixCOO(size(S, 1), size(S, 2), copy(rows(S)), copy(cols(S)), complex(copy(nonzeros(S))))
+  SparseMatrixCOO(size(S, 1), size(S, 2), copy(rows(S)), copy(columns(S)), complex(copy(nonzeros(S))))
