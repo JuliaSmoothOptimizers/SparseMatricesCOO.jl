@@ -20,10 +20,12 @@ using SparseMatricesCOO
   @test all(_rs .== rs)
   @test all(_cs .== cs)
   @test all(_vs .== vs)
-  fullA = [1.0 0.0 0.0 0.0 0.0
-           0.0 2.0 0.0 0.0 0.0
-           0.0 0.0 3.0 0.0 0.0
-           0.0 0.0 0.0 4.0 5.0]
+  fullA = [
+    1.0 0.0 0.0 0.0 0.0
+    0.0 2.0 0.0 0.0 0.0
+    0.0 0.0 3.0 0.0 0.0
+    0.0 0.0 0.0 4.0 5.0
+  ]
   @test Matrix(A) == fullA
   @test eltype(transpose(A)) == eltype(A)
   _rs, _cs, _vs = findnz(transpose(A))
@@ -43,7 +45,7 @@ using SparseMatricesCOO
 end
 
 @testset "Conversion from dense" begin
-  A = Matrix(sprand(10, 15, .4))
+  A = Matrix(sprand(10, 15, 0.4))
   B = SparseMatrixCOO(A)
   @test eltype(B) == eltype(A)
   @test size(B) == size(A)
@@ -51,7 +53,7 @@ end
 end
 
 @testset "Conversion from SparseMatrixCSC" begin
-  A = sprand(10, 15, .4)
+  A = sprand(10, 15, 0.4)
   B = SparseMatrixCOO(A)
   @test nnz(B) == nnz(A)
   Ars, Acs, Avs = findnz(A)
@@ -63,7 +65,7 @@ end
 
 @testset "3-arg Matrix multiply tests" begin
   m, n = 10, 15
-  A = sprand(m, n, .4)
+  A = sprand(m, n, 0.4)
   B = SparseMatrixCOO(A)
   T = eltype(A)
   @test eltype(B) == T
@@ -86,7 +88,7 @@ end
 
 @testset "5-arg Matrix multiply tests" begin
   m, n = 10, 15
-  A = sprand(m, n, .4)
+  A = sprand(m, n, 0.4)
   B = SparseMatrixCOO(A)
   x = rand(n)
   yA = ones(m)
@@ -109,7 +111,7 @@ end
 
 @testset "Symmetric/Hermitian tests" begin
   m = 10
-  A = sprand(m, m, .4)
+  A = sprand(m, m, 0.4)
   B = SparseMatrixCOO(A)
   lA = Symmetric(A, :L)
   lB = Symmetric(B, :L)
@@ -122,4 +124,3 @@ end
   mul!(yB, lB, x, α, β)
   @test all(yA .≈ yB)
 end
-
