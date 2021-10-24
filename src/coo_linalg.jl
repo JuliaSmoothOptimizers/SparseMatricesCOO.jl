@@ -34,8 +34,8 @@ for (T, t) in ((Adjoint, adjoint), (Transpose, transpose))
       β != 0 ? rmul!(C, β) : fill!(C, zero(eltype(C)))
     end
     @inbounds for k = 1:nnz(A)
-      j, i = A.rows[k], A.cols[k]
-      @views C[i, :] += α * $t(A.vals[k]) * B[j, :]
+      i, j = A.rows[k], A.cols[k]
+      @views C[j, :] += α * $t(A.vals[k]) * B[i, :]
     end
     C
   end
@@ -58,10 +58,10 @@ for (T, t) in ((Hermitian, adjoint), (Symmetric, transpose))
     end
     @inbounds for k = 1:nnz(A)
       i, j, a = A.rows[k], A.cols[k], A.vals[k]
-      (xA.uplo == :U && i < j) || (xA.uplo == :L && i > j) && continue  # ignore elements in this triangle
-      @views C[i, :] += a * B[j, :]
+      ((xA.uplo == 'U' && i > j) || (xA.uplo == 'L' && i < j)) && continue  # ignore elements in this triangle
+      @views C[i, :] += α * a * B[j, :]
       if i != j
-        @views C[j, :] += $t(a) * B[i, :]
+        @views C[j, :] += α * $t(a) * B[i, :]
       end
     end
     C
