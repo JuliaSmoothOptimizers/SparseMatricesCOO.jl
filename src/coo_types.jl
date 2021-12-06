@@ -31,6 +31,23 @@ mutable struct SparseMatrixCOO{Tv, Ti <: Integer} <: AbstractSparseMatrixCOO{Tv,
   end
 end
 
+"""
+    SparseMatrixCOO(m, n, rows, cols, vals)
+
+Creates a sparse matrix stored in COO format.
+
+# Examples
+```jldoctest
+julia> A = SparseMatrixCOO(3, 4, [1, 2, 2, 4], [1, 2, 3, 4], [4.0, 3.0, -2.0, 6.0])
+3×4 SparseMatrixCOO{Float64, Int64} with 4 stored entries:
+     ┌─────┐
+   1 │⠀⠄⠀⠀⠀│ > 0
+   3 │⠀⠀⠁⠁⡀│ < 0
+     └─────┘
+     ⠀1⠀⠀⠀4⠀
+     ⠀nz = 4
+```
+"""
 function SparseMatrixCOO(m::Integer, n::Integer, rows::Vector, cols::Vector, vals::Vector)
   Tv = eltype(vals)
   Ti = promote_type(eltype(rows), eltype(cols))
@@ -52,17 +69,6 @@ Base.size(A::SparseMatrixCOO) = (getfield(A, :m), getfield(A, :n))
     nnz(A)
 
 Returns the number of stored (filled) elements in a sparse array.
-
-# Examples
-```jldoctest
-julia> A = sparse(2I, 3, 3)
-3×3 SparseMatrixCSC{Int64,Int64} with 3 stored entries:
-  [1, 1]  =  2
-  [2, 2]  =  2
-  [3, 3]  =  2
-julia> nnz(A)
-3
-```
 """
 SparseArrays.nnz(A::SparseMatrixCOO) = length(A.vals)
 SparseArrays.nnz(A::Transpose{Tv, SparseMatrixCOO{Tv, Ti}}) where {Tv, Ti} = nnz(A.parent)
@@ -75,48 +81,20 @@ Return a vector of the structural nonzero values in sparse array `A`. This
 includes zeros that are explicitly stored in the sparse array. The returned
 vector points directly to the internal nonzero storage of `A`, and any
 modifications to the returned vector will mutate `A` as well. See
-[`rows`](@ref) and [`nzrange`](@ref).
-
-# Examples
-```jldoctest
-julia> A = sparse(2I, 3, 3)
-3×3 SparseMatrixCSC{Int64,Int64} with 3 stored entries:
-  [1, 1]  =  2
-  [2, 2]  =  2
-  [3, 3]  =  2
-julia> nonzeros(A)
-3-element Array{Int64,1}:
- 2
- 2
- 2
-```
+[`rows`](@ref).
 """
 SparseArrays.nonzeros(A::SparseMatrixCOO) = getfield(A, :vals)
 Base.values(A::SparseMatrixCOO) = nonzeros(A)
 
+SparseArrays.rowvals(A::SparseMatrixCOO) = getfield(A, :rows)
 """
     rows(A::AbstractSparseMatrixCOO)
 
 Return a vector of the row indices of `A`. Any modifications to the returned
 vector will mutate `A` as well. Providing access to how the row indices are
 stored internally can be useful in conjunction with iterating over structural
-nonzero values. See also [`nonzeros`](@ref) and [`nzrange`](@ref).
-
-# Examples
-```jldoctest
-julia> A = sparse(2I, 3, 3)
-3×3 SparseMatrixCSC{Int64,Int64} with 3 stored entries:
-  [1, 1]  =  2
-  [2, 2]  =  2
-  [3, 3]  =  2
-julia> rowvals(A)
-3-element Array{Int64,1}:
- 1
- 2
- 3
-```
+nonzero values. See also [`nonzeros`](@ref).
 """
-SparseArrays.rowvals(A::SparseMatrixCOO) = getfield(A, :rows)
 rows(A::SparseMatrixCOO) = rowvals(A)
 columns(A::SparseMatrixCOO) = getfield(A, :cols)
 
