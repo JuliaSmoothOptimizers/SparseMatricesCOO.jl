@@ -69,12 +69,16 @@ end
   B = SparseMatrixCOO(A)
   T = eltype(A)
   @test eltype(B) == T
+
   x = rand(n)
   yA = Vector{T}(undef, m)
   mul!(yA, A, x)
   yB = Vector{T}(undef, m)
   mul!(yB, B, x)
+  allocs = @allocated mul!(yB, B, x)
   @test all(yA .≈ yB)
+  @test allocs == 0
+
   y = rand(m)
   xA = Vector{T}(undef, n)
   mul!(xA, transpose(A), y)
@@ -84,6 +88,31 @@ end
   mul!(xA, A', y)
   mul!(xB, B', y)
   @test all(xA .≈ xB)
+
+  yA = Array{T}(undef, m, n)
+  x = rand(n, n)
+  mul!(yA, A, x)
+  yB = Array{T}(undef, m, n)
+  mul!(yB, B, x)
+  allocs = @allocated mul!(yB, B, x)
+  @test all(yA .≈ yB)
+  @test allocs == 0
+
+  A = sprand(ComplexF64, m, n, 0.4)
+  B = SparseMatrixCOO(A)
+  T = eltype(A)
+  @test eltype(B) == T
+  y = rand(m)
+  xA = Vector{T}(undef, n)
+  mul!(xA, transpose(A), y)
+  xB = Vector{T}(undef, n)
+  mul!(xB, transpose(B), y)
+  @test all(xA .≈ xB)
+  mul!(xA, A', y)
+  mul!(xB, B', y)
+  allocs = @allocated mul!(xB, B', y)
+  @test all(xA .≈ xB)
+  @test allocs == 0
 end
 
 @testset "5-arg Matrix multiply tests" begin
@@ -122,5 +151,37 @@ end
   mul!(yA, lA, x, α, β)
   yB = ones(m)
   mul!(yB, lB, x, α, β)
+  yB = ones(m)
+  allocs = @allocated mul!(yB, lB, x, α, β)
   @test all(yA .≈ yB)
+  @test allocs == 0
+
+  T = ComplexF64
+  A = sprand(T, m, m, 0.4)
+  A[diagind(A)] .= real.(A[diagind(A)])
+  B = SparseMatrixCOO(A)
+  lA = Hermitian(A, :L)
+  lB = Hermitian(B, :L)
+  x = rand(T, m)
+  yA = ones(T, m)
+  α = rand()
+  β = rand()
+  mul!(yA, lA, x, α, β)
+  yB = ones(T, m)
+  mul!(yB, lB, x, α, β)
+  yB = ones(T, m)
+  allocs = @allocated mul!(yB, lB, x, α, β)
+  @test all(yA .≈ yB)
+  @test allocs == 0
+
+  n = 7
+  x = rand(T, m, n)
+  yA = ones(T, m, n)
+  mul!(yA, lA, x, α, β)
+  yB = ones(T, m, n)
+  mul!(yB, lB, x, α, β)
+  yB = ones(T, m, n)
+  allocs = @allocated mul!(yB, lB, x, α, β)
+  @test all(yA .≈ yB)
+  @test allocs == 0
 end

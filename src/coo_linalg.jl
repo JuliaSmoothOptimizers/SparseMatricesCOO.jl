@@ -1,3 +1,17 @@
+function mulCOO!(C::AbstractVector, Arows, Acols, Avals, B::AbstractVector, α, Annz)
+  @inbounds for k = 1:Annz
+    i, j = Arows[k], Acols[k]
+    C[i] += α * Avals[k] * B[j]
+  end
+end
+
+function mulCOO!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMatrix, α, Annz)
+  @inbounds for k = 1:Annz
+    i, j = Arows[k], Acols[k]
+    @views C[i, :] .+= (α * Avals[k]) .* B[j, :]
+  end
+end
+
 function LinearAlgebra.mul!(
   C::StridedVecOrMat,
   A::AbstractSparseMatrixCOO,
@@ -11,11 +25,22 @@ function LinearAlgebra.mul!(
   if β != 1
     β != 0 ? rmul!(C, β) : fill!(C, zero(eltype(C)))
   end
-  @inbounds for k = 1:nnz(A)
-    i, j = A.rows[k], A.cols[k]
-    @views C[i, :] += α * A.vals[k] * B[j, :]
-  end
+  mulCOO!(C, A.rows, A.cols, A.vals, B, α, nnz(A))
   C
+end
+
+function mulCOOt!(C::AbstractVector, Arows, Acols, Avals, B::AbstractVector, α, Annz, t)
+  @inbounds for k = 1:Annz
+    i, j = Acols[k], Arows[k] 
+    C[i] += α * t(Avals[k]) * B[j]
+  end
+end
+
+function mulCOOt!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMatrix, α, Annz, t)
+  @inbounds for k = 1:Annz
+    i, j = Acols[k], Arows[k]
+    @views C[i, :] .+= (α * t(Avals[k])) .* B[j, :]
+  end
 end
 
 for (T, t) in ((Adjoint, adjoint), (Transpose, transpose))
@@ -33,11 +58,30 @@ for (T, t) in ((Adjoint, adjoint), (Transpose, transpose))
     if β != 1
       β != 0 ? rmul!(C, β) : fill!(C, zero(eltype(C)))
     end
-    @inbounds for k = 1:nnz(A)
-      i, j = A.rows[k], A.cols[k]
-      @views C[j, :] += α * $t(A.vals[k]) * B[i, :]
-    end
+    mulCOOt!(C, A.rows, A.cols, A.vals, B, α, nnz(A), $t)
     C
+  end
+end
+
+function mulCOOsym!(C::AbstractVector, Arows, Acols, Avals, B::AbstractVector, α, Annz, t, uplo)
+  @inbounds for k = 1:Annz
+    i, j, a = Arows[k], Acols[k], Avals[k]
+    ((uplo == 'U' && i > j) || (uplo == 'L' && i < j)) && continue  # ignore elements in this triangle
+    C[i] += α * a * B[j]
+    if i != j
+      C[j] += α * t(a) * B[i]
+    end
+  end
+end
+
+function mulCOOsym!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMatrix, α, Annz, t, uplo)
+  @inbounds for k = 1:Annz
+    i, j, a = Arows[k], Acols[k], Avals[k]
+    ((uplo == 'U' && i > j) || (uplo == 'L' && i < j)) && continue  # ignore elements in this triangle
+    @views C[i, :] .+= (α * a) .* B[j, :]
+    if i != j
+      @views C[j, :] .+= (α * t(a)) .* B[i, :]
+    end
   end
 end
 
@@ -56,14 +100,7 @@ for (T, t) in ((Hermitian, adjoint), (Symmetric, transpose))
     if β != 1
       β != 0 ? rmul!(C, β) : fill!(C, zero(eltype(C)))
     end
-    @inbounds for k = 1:nnz(A)
-      i, j, a = A.rows[k], A.cols[k], A.vals[k]
-      ((xA.uplo == 'U' && i > j) || (xA.uplo == 'L' && i < j)) && continue  # ignore elements in this triangle
-      @views C[i, :] += α * a * B[j, :]
-      if i != j
-        @views C[j, :] += α * $t(a) * B[i, :]
-      end
-    end
+    mulCOOsym!(C, A.rows, A.cols, A.vals, B, α, nnz(A), $t, xA.uplo)
     C
   end
 end
