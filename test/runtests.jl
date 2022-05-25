@@ -126,7 +126,10 @@ end
   mul!(yA, A, x, α, β)
   yB = ones(m)
   mul!(yB, B, x, α, β)
+  yB = ones(m)
+  allocs = @allocated mul!(yB, B, x, α, β)
   @test all(yA .≈ yB)
+  @test allocs == 0
   y = rand(m)
   xA = ones(n)
   mul!(xA, transpose(A), y, α, β)
