@@ -97,6 +97,11 @@ end
   allocs = @allocated mul!(yB, B, x)
   @test all(yA .≈ yB)
   @test allocs == 0
+  xA = Vector{T}(undef, n)
+  mul!(xA, transpose(A), y)
+  xB = Vector{T}(undef, n)
+  mul!(xB, transpose(B), y)
+  @test all(xA .≈ xB)
 
   A = sprand(ComplexF64, m, n, 0.4)
   B = SparseMatrixCOO(A)
