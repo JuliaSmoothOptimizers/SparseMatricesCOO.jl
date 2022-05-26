@@ -1,11 +1,11 @@
-function mulCOO!(C::AbstractVector, Arows, Acols, Avals, B::AbstractVector, α, Annz)
+function coo_mul!(C::AbstractVector, Arows, Acols, Avals, B::AbstractVector, α, Annz)
   @inbounds for k = 1:Annz
     i, j = Arows[k], Acols[k]
     C[i] += α * Avals[k] * B[j]
   end
 end
 
-function mulCOO!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMatrix, α, Annz)
+function coo_mul!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMatrix, α, Annz)
   @inbounds for k = 1:Annz
     i, j = Arows[k], Acols[k]
     @views C[i, :] .+= (α * Avals[k]) .* B[j, :]
@@ -25,18 +25,18 @@ function LinearAlgebra.mul!(
   if β != 1
     β != 0 ? rmul!(C, β) : fill!(C, zero(eltype(C)))
   end
-  mulCOO!(C, A.rows, A.cols, A.vals, B, α, nnz(A))
+  coo_mul!(C, A.rows, A.cols, A.vals, B, α, nnz(A))
   C
 end
 
-function mulCOOt!(C::AbstractVector, Arows, Acols, Avals, B::AbstractVector, α, Annz, t)
+function coo_adjtrans_mul!(C::AbstractVector, Arows, Acols, Avals, B::AbstractVector, α, Annz, t)
   @inbounds for k = 1:Annz
     i, j = Acols[k], Arows[k] 
     C[i] += α * t(Avals[k]) * B[j]
   end
 end
 
-function mulCOOt!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMatrix, α, Annz, t)
+function coo_adjtrans_mul!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMatrix, α, Annz, t)
   @inbounds for k = 1:Annz
     i, j = Acols[k], Arows[k]
     @views C[i, :] .+= (α * t(Avals[k])) .* B[j, :]
@@ -58,12 +58,12 @@ for (T, t) in ((Adjoint, adjoint), (Transpose, transpose))
     if β != 1
       β != 0 ? rmul!(C, β) : fill!(C, zero(eltype(C)))
     end
-    mulCOOt!(C, A.rows, A.cols, A.vals, B, α, nnz(A), $t)
+    coo_adjtrans_mul!(C, A.rows, A.cols, A.vals, B, α, nnz(A), $t)
     C
   end
 end
 
-function mulCOOsym!(C::AbstractVector, Arows, Acols, Avals, B::AbstractVector, α, Annz, t, uplo)
+function coo_sym_mul!(C::AbstractVector, Arows, Acols, Avals, B::AbstractVector, α, Annz, t, uplo)
   @inbounds for k = 1:Annz
     i, j, a = Arows[k], Acols[k], Avals[k]
     ((uplo == 'U' && i > j) || (uplo == 'L' && i < j)) && continue  # ignore elements in this triangle
@@ -74,7 +74,7 @@ function mulCOOsym!(C::AbstractVector, Arows, Acols, Avals, B::AbstractVector, �
   end
 end
 
-function mulCOOsym!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMatrix, α, Annz, t, uplo)
+function coo_sym_mul!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMatrix, α, Annz, t, uplo)
   @inbounds for k = 1:Annz
     i, j, a = Arows[k], Acols[k], Avals[k]
     ((uplo == 'U' && i > j) || (uplo == 'L' && i < j)) && continue  # ignore elements in this triangle
@@ -100,7 +100,7 @@ for (T, t) in ((Hermitian, adjoint), (Symmetric, transpose))
     if β != 1
       β != 0 ? rmul!(C, β) : fill!(C, zero(eltype(C)))
     end
-    mulCOOsym!(C, A.rows, A.cols, A.vals, B, α, nnz(A), $t, xA.uplo)
+    coo_sym_mul!(C, A.rows, A.cols, A.vals, B, α, nnz(A), $t, xA.uplo)
     C
   end
 end
