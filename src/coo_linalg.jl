@@ -31,7 +31,7 @@ end
 
 function coo_adjtrans_mul!(C::AbstractVector, Arows, Acols, Avals, B::AbstractVector, α, Annz, t)
   @inbounds for k = 1:Annz
-    i, j = Acols[k], Arows[k] 
+    i, j = Acols[k], Arows[k]
     C[i] += α * t(Avals[k]) * B[j]
   end
 end
