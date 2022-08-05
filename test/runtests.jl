@@ -196,3 +196,15 @@ end
   @test all(yA .≈ yB)
   @test allocs == 0
 end
+
+@testset "dropzeros" begin
+  rows = [1, 1, 3, 2, 5, 7, 9, 6]
+  cols = [1, 2, 2, 3, 7, 9, 9, 12]
+  vals = [0.0, 2.0, 3.0, 0.0, 0.0, 0.0, 2.0, 0.0]
+  A = SparseMatrixCOO(10, 15, rows, cols, vals)
+  dropzeros!(A)
+  @test length(A.rows) == 3
+  @test A.rows == [1, 3, 9]
+  @test A.cols == [2, 2, 9]
+  @test A.vals == [2.0, 3.0, 2.0]
+end
