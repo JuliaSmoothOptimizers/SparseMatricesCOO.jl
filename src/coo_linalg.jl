@@ -104,3 +104,23 @@ for (T, t) in ((Hermitian, adjoint), (Symmetric, transpose))
     C
   end
 end
+
+function SparseArrays.dropzeros!(A::SparseMatrixCOO{T}) where {T}
+  Arows, Acols, Avals = A.rows, A.cols, A.vals
+  Awritepos = 0
+  nnzA = length(Arows)
+  for k in 1:nnzA
+    Ax = Avals[k]
+    if Ax != zero(T)
+      Awritepos += 1
+      Arows[Awritepos] = Arows[k]
+      Acols[Awritepos] = Acols[k]
+      Avals[Awritepos] = Ax
+    end
+  end
+  if Awritepos != nnzA
+    resize!(Arows, Awritepos)
+    resize!(Acols, Awritepos)
+    resize!(Avals, Awritepos)
+  end
+end
