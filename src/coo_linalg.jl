@@ -109,7 +109,7 @@ function SparseArrays.dropzeros!(A::SparseMatrixCOO{T}) where {T}
   Arows, Acols, Avals = A.rows, A.cols, A.vals
   Awritepos = 0
   nnzA = length(Arows)
-  for k in 1:nnzA
+  @inbounds for k in 1:nnzA
     Ax = Avals[k]
     if Ax != zero(T)
       Awritepos += 1
