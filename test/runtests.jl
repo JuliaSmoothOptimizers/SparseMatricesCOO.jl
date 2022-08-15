@@ -208,3 +208,16 @@ end
   @test A.cols == [2, 2, 9]
   @test A.vals == [2.0, 3.0, 2.0]
 end
+
+@testset "cat" begin
+  A = sprand(Float64, 50, 40, 0.4)
+  B = sprand(Float64, 50, 20, 0.4)
+  C = sprand(Float64, 30, 40, 0.4)
+  csc_hcat = [A B]
+  coo_hcat = [SparseMatrixCOO(A) SparseMatrixCOO(B)]
+  csc_vcat = [A; C]
+  coo_vcat = [SparseMatrixCOO(A); SparseMatrixCOO(C)]
+  @test norm(csc_hcat - coo_hcat) ≤ sqrt(eps())
+  @test norm(csc_vcat - coo_vcat) ≤ sqrt(eps())
+  @test issorted(coo_vcat.cols)
+end

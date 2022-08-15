@@ -124,3 +124,47 @@ function SparseArrays.dropzeros!(A::SparseMatrixCOO{T}) where {T}
     resize!(Avals, Awritepos)
   end
 end
+
+import Base.hcat, Base.vcat
+
+function hcat(A::SparseMatrixCOO{T}, B::SparseMatrixCOO{T}) where {T}
+  mA, nA = size(A)
+  mB, nB = size(B)
+  @assert mA == mB
+  rows = [A.rows; B.rows]
+  cols = [A.cols; B.cols .+ nA]
+  vals = [A.vals; B.vals]
+  return SparseMatrixCOO(mA, nA + nB, rows, cols, vals)
+end
+
+function vcat(A::SparseMatrixCOO{T, I}, B::SparseMatrixCOO{T, I}) where {T, I}
+  mA, nA = size(A)
+  mB, nB = size(B)
+  nnzA = nnz(A)
+  nnzB = nnz(B)
+  nnz_tot = nnz(A) + nnz(B)
+  Arows, Acols, Avals = A.rows, A.cols, A.vals
+  Brows, Bcols, Bvals = B.rows, B.cols, B.vals
+  @assert nA == nB
+  rows = Vector{I}(undef, nnz_tot)
+  cols = Vector{I}(undef, nnz_tot)
+  vals = Vector{T}(undef, nnz_tot)
+  # keep column-sorted order then each column is row-sorted
+  kA, kB = 1, 1
+  for k=1:nnz_tot
+    if kA > nnzA
+      rows[k], cols[k], vals[k] = Brows[kB] + mA, Bcols[kB], Bvals[kB]
+      kB += 1
+    elseif kB > nnzB
+      rows[k], cols[k], vals[k] = Arows[kA], Acols[kA], Avals[kA]
+      kA += 1
+    elseif Acols[kA] > Bcols[kB]
+      rows[k], cols[k], vals[k] = Brows[kB] + mA, Bcols[kB], Bvals[kB]
+      kB += 1
+    elseif Acols[kA] ≤ Bcols[kB]
+      rows[k], cols[k], vals[k] = Arows[kA], Acols[kA], Avals[kA]
+      kA += 1
+    end
+  end
+  return SparseMatrixCOO(mA + mB, nA, rows, cols, vals)
+end
