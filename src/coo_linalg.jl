@@ -202,7 +202,7 @@ function +(A::SparseMatrixCOO{T}, D::Diagonal{T, Vector{T}}) where {T}
   @assert m == n == size(D, 2)
   nnz_B = nnz_A + m
   Arows, Acols, Avals = A.rows, A.cols, A.vals
-  for k=1:nnz_A
+  for k = 1:nnz_A
     if Arows[k] == Acols[k]
       nnz_B -= 1
     end
@@ -213,7 +213,7 @@ function +(A::SparseMatrixCOO{T}, D::Diagonal{T, Vector{T}}) where {T}
   kB = 1 # current B index
   d = D.diag
   kd = 1 # current d index
-  for k=1:nnz_A
+  for k = 1:nnz_A
     while kd < Acols[k] || (kd == Acols[k] && kd < Arows[k])
       Brows[kB], Bcols[kB], Bvals[kB] = kd, kd, d[kd]
       kB += 1
