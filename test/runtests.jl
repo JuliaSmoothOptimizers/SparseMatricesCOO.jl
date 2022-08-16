@@ -280,3 +280,45 @@ end
   @test norm(B_csc - B_coo) ≤ sqrt(eps()) * norm(B_csc)
   @test issorted(B_coo.cols)
 end
+
+@testset "row/col reduce" begin
+  A = sprand(Float64, 10, 15, 0.2) .- 0.5
+  A_coo = SparseMatrixCOO(A)
+  v = zeros(10)
+  v_coo = zeros(10)
+  maximum!(abs, v, A)
+  maximum!(abs, v_coo, A_coo)
+  @test norm(v - v_coo) ≤ sqrt(eps()) * norm(v)
+
+  v2 = zeros(15)
+  v_coo2 = zeros(15)
+  maximum!(abs, v2', A)
+  maximum!(abs, v_coo2', A_coo)
+  @test norm(v2 - v_coo2) ≤ sqrt(eps()) * norm(v2)
+
+  As = Symmetric(A*A')
+  As_coo = Symmetric(SparseMatrixCOO(As.data))
+  v .= 0
+  v_coo .= 0
+  maximum!(abs, v, As)
+  maximum!(abs, v_coo, As_coo)
+  @test norm(v - v_coo) ≤ sqrt(eps()) * norm(v)
+  v .= 0
+  v_coo .= 0
+  maximum!(abs, v', As)
+  maximum!(abs, v_coo', As_coo)
+  @test norm(v - v_coo) ≤ sqrt(eps()) * norm(v)
+
+  As = Symmetric(tril(A*A'), :L)
+  As_coo = Symmetric(SparseMatrixCOO(As.data), :L)
+  v .= 0
+  v_coo .= 0
+  maximum!(abs, v, As)
+  maximum!(abs, v_coo, As_coo)
+  @test norm(v - v_coo) ≤ sqrt(eps()) * norm(v)
+  v .= 0
+  v_coo .= 0
+  maximum!(abs, v', As)
+  maximum!(abs, v_coo', As_coo)
+  @test norm(v - v_coo) ≤ sqrt(eps()) * norm(v)
+end

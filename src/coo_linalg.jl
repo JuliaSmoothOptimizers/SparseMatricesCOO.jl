@@ -277,3 +277,69 @@ function +(A::SparseMatrixCOO{T}, D::Diagonal{T, Vector{T}}) where {T}
 end
 
 +(D::Diagonal, A::SparseMatrixCOO) = A + D
+
+# maximum! functions
+replace_if_minusinf(val::T, replacement::T) where {T} = (val == -T(Inf)) ? replacement : val
+function LinearAlgebra.maximum!(f::Function, v::AbstractVector{T}, A::SparseMatrixCOO{T}) where {T}
+  nnz_A = nnz(A)
+  Arows, Avals = A.rows, A.vals
+  @assert length(v) == size(A, 1)
+  v .= -T(Inf)
+  for k = 1:nnz_A
+    i, faij = Arows[k], f(Avals[k])
+    max(faij, v[i]) == faij && (v[i] = faij)
+  end
+  # if empty rows
+  replacement = f(zero(T))
+  v .= replace_if_minusinf.(v, replacement)
+end
+
+function LinearAlgebra.maximum!(
+  f::Function,
+  v::Union{Transpose{T, <:AbstractVector{T}}, Adjoint{T, <:AbstractVector{T}}},
+  A::SparseMatrixCOO{T},
+) where {T}
+  nnz_A = nnz(A)
+  Acols, Avals = A.cols, A.vals
+  @assert size(v, 2) == size(A, 2)
+  vT = v.parent
+  vT .= -T(Inf)
+  for k = 1:nnz_A
+    j, faij = Acols[k], f(Avals[k])
+    max(faij, vT[j]) == faij && (vT[j] = faij)
+  end
+  # if empty rows
+  replacement = f(zero(T))
+  v .= replace_if_minusinf.(v, replacement)
+end
+
+
+function maximum_sym_vec!(f::Function,
+  v::AbstractVector{T},
+  A::SparseMatrixCOO{T},
+) where {T}
+  nnz_A = nnz(A)
+  Arows, Acols, Avals = A.rows, A.cols, A.vals
+  @assert length(v) == size(A, 1)
+  v .= -T(Inf)
+  for k = 1:nnz_A
+    i, j, faij = Arows[k], Acols[k], f(Avals[k])
+    max(faij, v[i]) == faij && (v[i] = faij)
+    max(faij, v[j]) == faij && (v[j] = faij)
+  end
+  # if empty rows
+  replacement = f(zero(T))
+  v .= replace_if_minusinf.(v, replacement)
+end
+
+LinearAlgebra.maximum!(
+  f::Function,
+  v::AbstractVector{T},
+  A::Symmetric{T, <:SparseMatrixCOO{T}},
+) where {T} = maximum_sym_vec!(f, v, A.data)
+
+LinearAlgebra.maximum!(
+  f::Function,
+  v::Union{Transpose{T, <:AbstractVector{T}}, Adjoint{T, <:AbstractVector{T}}},
+  A::Symmetric{T, <:SparseMatrixCOO{T}},
+) where {T} = maximum_sym_vec!(f, v.parent, A.data)
