@@ -105,6 +105,34 @@ for (T, t) in ((Hermitian, adjoint), (Symmetric, transpose))
   end
 end
 
+function loperation!(operation::Function, D::Diagonal, A::SparseMatrixCOO)
+  @assert size(D, 2) == size(A, 1)
+  nnz_A = nnz(A)
+  Arows, Avals = A.rows, A.vals
+  d = D.diag
+  for k = 1:nnz_A
+    i = Arows[k]
+    Avals[k] = operation(Avals[k], d[i])
+  end
+  return A
+end
+LinearAlgebra.lmul!(D::Diagonal, A::SparseMatrixCOO) = loperation!(*, D, A)
+LinearAlgebra.ldiv!(D::Diagonal, A::SparseMatrixCOO) = loperation!(/, D, A)
+
+function roperation!(operation::Function, A::SparseMatrixCOO, D::Diagonal)
+  @assert size(D, 1) == size(A, 2)
+  nnz_A = nnz(A)
+  Acols, Avals = A.cols, A.vals
+  d = D.diag
+  for k = 1:nnz_A
+    j = Acols[k]
+    Avals[k] = operation(Avals[k], d[j])
+  end
+  return A
+end
+LinearAlgebra.rmul!(A::SparseMatrixCOO, D::Diagonal) = roperation!(*, A, D)
+LinearAlgebra.rdiv!(A::SparseMatrixCOO, D::Diagonal) = roperation!(/, A, D)
+
 function SparseArrays.dropzeros!(A::SparseMatrixCOO{T}) where {T}
   Arows, Acols, Avals = A.rows, A.cols, A.vals
   Awritepos = 0
