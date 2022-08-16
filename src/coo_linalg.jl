@@ -191,3 +191,50 @@ end
 Creates a zero `SparseMatrixCOO` of type `T` with `m` rows and `n` columns.
 """
 coo_spzeros(T, m, n) = SparseMatrixCOO(m, n, Int[], Int[], T[])
+
+import Base.-, Base.+
+
+-(A::SparseMatrixCOO) = SparseMatrixCOO(A.m, A.n, copy(A.rows), copy(A.cols), .-copy(A.vals))
+
+function +(A::SparseMatrixCOO{T}, D::Diagonal{T, Vector{T}}) where {T}
+  nnz_A = nnz(A)
+  m, n = size(A)
+  @assert m == n == size(D, 2)
+  nnz_B = nnz_A + m
+  Arows, Acols, Avals = A.rows, A.cols, A.vals
+  for k=1:nnz_A
+    if Arows[k] == Acols[k]
+      nnz_B -= 1
+    end
+  end
+  Brows = Vector{Int}(undef, nnz_B)
+  Bcols = Vector{Int}(undef, nnz_B)
+  Bvals = Vector{T}(undef, nnz_B)
+  kB = 1 # current B index
+  d = D.diag
+  kd = 1 # current d index
+  for k=1:nnz_A
+    while kd < Acols[k] || (kd == Acols[k] && kd < Arows[k])
+      Brows[kB], Bcols[kB], Bvals[kB] = kd, kd, d[kd]
+      kB += 1
+      kd += 1
+    end
+    Arowk, Acolk = Arows[k], Acols[k]
+    Brows[kB], Bcols[kB] = Arowk, Acolk
+    if kd == Arowk == Acolk
+      Bvals[kB] = Avals[k] + d[kd]
+      kd += 1
+    else
+      Bvals[kB] = Avals[k]
+    end
+    kB += 1
+  end
+  while kd ≤ n
+    Brows[kB], Bcols[kB], Bvals[kB] = kd, kd, d[kd]
+    kB += 1
+    kd += 1
+  end
+  return SparseMatrixCOO(n, n, Brows, Bcols, Bvals)
+end
+
++(D::Diagonal, A::SparseMatrixCOO) = A + D
