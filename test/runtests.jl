@@ -217,8 +217,8 @@ end
   coo_hcat = [SparseMatrixCOO(A) SparseMatrixCOO(B) SparseMatrixCOO(A)]
   csc_vcat = [A; C; A]
   coo_vcat = [SparseMatrixCOO(A); SparseMatrixCOO(C); SparseMatrixCOO(A)]
-  @test norm(csc_hcat - coo_hcat) ≤ sqrt(eps())
-  @test norm(csc_vcat - coo_vcat) ≤ sqrt(eps())
+  @test norm(csc_hcat - coo_hcat) ≤ sqrt(eps()) * norm(csc_hcat)
+  @test norm(csc_vcat - coo_vcat) ≤ sqrt(eps()) * norm(csc_vcat)
   @test issorted(coo_vcat.cols)
 
   A = sprand(Float64, 50, 40, 0.4)
@@ -226,6 +226,6 @@ end
   D = sprand(Float64, 30, 20, 0.4)
   csc_cat = [A B; spzeros(Float64, 30, 40) D]
   coo_cat = vcat([SparseMatrixCOO(A) SparseMatrixCOO(B)], [coo_spzeros(Float64, 30, 40) SparseMatrixCOO(D)])
-  @test norm(csc_cat - coo_cat) ≤ sqrt(eps())
+  @test norm(csc_cat - coo_cat) ≤ sqrt(eps()) * norm(csc_cat)
   @test issorted(coo_cat.cols)
 end
