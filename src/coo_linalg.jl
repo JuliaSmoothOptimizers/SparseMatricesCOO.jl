@@ -137,6 +137,14 @@ function hcat(A::SparseMatrixCOO{T}, B::SparseMatrixCOO{T}) where {T}
   return SparseMatrixCOO(mA, nA + nB, rows, cols, vals)
 end
 
+function uniform_scaling_to_coo(λI::UniformScaling, n::Int, T::DataType)
+  λ = (λI.λ == true) ? one(T) : λI.λ
+  return SparseMatrixCOO(n, n, Vector(1:n), Vector(1:n), fill(T(λ), n))
+end
+
+hcat(A::SparseMatrixCOO{T}, λI::UniformScaling) where {T} = hcat(A, uniform_scaling_to_coo(λI, size(A, 1), T))
+hcat(λI::UniformScaling, A::SparseMatrixCOO{T}) where {T} = hcat(uniform_scaling_to_coo(λI, size(A, 1), T), A)
+
 function hcat(As::AbstractSparseMatrixCOO...)
   A = As[1]
   for i = 2:length(As)
@@ -176,6 +184,9 @@ function vcat(A::SparseMatrixCOO{T, I}, B::SparseMatrixCOO{T, I}) where {T, I}
   end
   return SparseMatrixCOO(mA + mB, nA, rows, cols, vals)
 end
+
+vcat(A::SparseMatrixCOO{T}, λI::UniformScaling) where {T} = vcat(A, uniform_scaling_to_coo(λI, size(A, 2), T))
+vcat(λI::UniformScaling, A::SparseMatrixCOO{T}) where {T} = vcat(uniform_scaling_to_coo(λI, size(A, 2), T), A)
 
 function vcat(As::AbstractSparseMatrixCOO...)
   A = As[1]
