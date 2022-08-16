@@ -225,7 +225,8 @@ end
   B = sprand(Float64, 50, 20, 0.4)
   D = sprand(Float64, 30, 20, 0.4)
   csc_cat = [A B; spzeros(Float64, 30, 40) D]
-  coo_cat = vcat([SparseMatrixCOO(A) SparseMatrixCOO(B)], [coo_spzeros(Float64, 30, 40) SparseMatrixCOO(D)])
+  coo_cat =
+    vcat([SparseMatrixCOO(A) SparseMatrixCOO(B)], [coo_spzeros(Float64, 30, 40) SparseMatrixCOO(D)])
   @test norm(csc_cat - coo_cat) ≤ sqrt(eps()) * norm(csc_cat)
   @test issorted(coo_cat.cols)
 end

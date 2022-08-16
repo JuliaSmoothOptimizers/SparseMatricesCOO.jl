@@ -159,7 +159,7 @@ function vcat(A::SparseMatrixCOO{T, I}, B::SparseMatrixCOO{T, I}) where {T, I}
   vals = Vector{T}(undef, nnz_tot)
   # keep column-sorted order then each column is row-sorted
   kA, kB = 1, 1
-  for k=1:nnz_tot
+  for k = 1:nnz_tot
     if kA > nnzA
       rows[k], cols[k], vals[k] = Brows[kB] + mA, Bcols[kB], Bvals[kB]
       kB += 1
