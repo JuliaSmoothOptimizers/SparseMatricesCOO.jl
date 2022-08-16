@@ -221,6 +221,21 @@ end
   @test norm(csc_vcat - coo_vcat) ≤ sqrt(eps()) * norm(csc_vcat)
   @test issorted(coo_vcat.cols)
 
+  csc_hcat = [A 3.0*I]
+  coo_hcat = [SparseMatrixCOO(A) 3.0*I]
+  csc_vcat = [A; 3.0*I]
+  coo_vcat = [SparseMatrixCOO(A); 3.0*I]
+  @test norm(csc_hcat - coo_hcat) ≤ sqrt(eps()) * norm(csc_hcat)
+  @test norm(csc_vcat - coo_vcat) ≤ sqrt(eps()) * norm(csc_vcat)
+  @test issorted(coo_vcat.cols)
+  csc_hcat = [I A]
+  coo_hcat = [I SparseMatrixCOO(A)]
+  csc_vcat = [I; A]
+  coo_vcat = [I; SparseMatrixCOO(A)]
+  @test norm(csc_hcat - coo_hcat) ≤ sqrt(eps()) * norm(csc_hcat)
+  @test norm(csc_vcat - coo_vcat) ≤ sqrt(eps()) * norm(csc_vcat)
+  @test issorted(coo_vcat.cols)
+
   A = sprand(Float64, 50, 40, 0.4)
   B = sprand(Float64, 50, 20, 0.4)
   D = sprand(Float64, 30, 20, 0.4)
