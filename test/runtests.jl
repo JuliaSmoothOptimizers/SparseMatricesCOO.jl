@@ -197,6 +197,26 @@ end
   @test allocs == 0
 end
 
+@testset "special multiply tests" begin
+  A = sprand(10, 15, 0.4)
+  D1 = Diagonal(rand(10))
+  A_coo = SparseMatrixCOO(A)
+  lmul!(D1, A)
+  lmul!(D1, A_coo)
+  @test norm(A - A_coo) ≤ sqrt(eps()) * norm(A)
+  ldiv!(D1, A)
+  ldiv!(D1, A_coo)
+  @test norm(A - A_coo) ≤ sqrt(eps()) * norm(A)
+
+  D2 = Diagonal(rand(15))
+  rmul!(A, D2)
+  rmul!(A_coo, D2)
+  @test norm(A - A_coo) ≤ sqrt(eps()) * norm(A)
+  rdiv!(A, D2)
+  rdiv!(A_coo, D2)
+  @test norm(A - A_coo) ≤ sqrt(eps()) * norm(A)
+end
+
 @testset "dropzeros" begin
   rows = [1, 1, 3, 2, 5, 7, 9, 6]
   cols = [1, 2, 2, 3, 7, 9, 9, 12]
