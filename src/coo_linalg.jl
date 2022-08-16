@@ -137,6 +137,14 @@ function hcat(A::SparseMatrixCOO{T}, B::SparseMatrixCOO{T}) where {T}
   return SparseMatrixCOO(mA, nA + nB, rows, cols, vals)
 end
 
+function hcat(As::AbstractSparseMatrixCOO...)
+  A = As[1]
+  for i = 2:length(As)
+    A = [A As[i]]
+  end
+  return A
+end
+
 function vcat(A::SparseMatrixCOO{T, I}, B::SparseMatrixCOO{T, I}) where {T, I}
   mA, nA = size(A)
   mB, nB = size(B)
@@ -168,3 +176,18 @@ function vcat(A::SparseMatrixCOO{T, I}, B::SparseMatrixCOO{T, I}) where {T, I}
   end
   return SparseMatrixCOO(mA + mB, nA, rows, cols, vals)
 end
+
+function vcat(As::AbstractSparseMatrixCOO...)
+  A = As[1]
+  for i = 2:length(As)
+    A = [A; As[i]]
+  end
+  return A
+end
+
+"""
+    coo_spzeros(T, m, n)
+
+Creates a zero `SparseMatrixCOO` of type `T` with `m` rows and `n` columns.
+"""
+coo_spzeros(T, m, n) = SparseMatrixCOO(m, n, Int[], Int[], T[])
