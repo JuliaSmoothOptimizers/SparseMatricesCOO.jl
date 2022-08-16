@@ -1,6 +1,6 @@
 module SparseMatricesCOO
 
-export SparseMatrixCOO
+export SparseMatrixCOO, coo_spzeros
 
 # TODO: fix jldoctests
 # TODO: implement views
