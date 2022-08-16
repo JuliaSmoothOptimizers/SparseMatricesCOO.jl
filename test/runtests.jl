@@ -230,3 +230,18 @@ end
   @test norm(csc_cat - coo_cat) ≤ sqrt(eps()) * norm(csc_cat)
   @test issorted(coo_cat.cols)
 end
+
+@testset "arithmetic operations" begin
+  A = sprand(Float64, 20, 20, 0.1)
+
+  # test -
+  A_coo = SparseMatrixCOO(A)
+  @test norm(-A - (-A_coo)) ≤ sqrt(eps()) * norm(A)
+
+  # test + with diagonal matrix
+  D = Diagonal(rand(20))
+  B_csc = D + A
+  B_coo = D + A_coo
+  @test norm(B_csc - B_coo) ≤ sqrt(eps()) * norm(B_csc)
+  @test issorted(B_coo.cols)
+end
