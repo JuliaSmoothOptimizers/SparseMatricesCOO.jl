@@ -105,7 +105,7 @@ for (T, t) in ((Hermitian, adjoint), (Symmetric, transpose))
   end
 end
 
-function loperation!(operation::Function, D::Diagonal, A::SparseMatrixCOO)
+function loperation!(operation::Function, D::Diagonal{T}, A::SparseMatrixCOO{T}) where {T}
   @assert size(D, 2) == size(A, 1)
   nnz_A = nnz(A)
   Arows, Avals = A.rows, A.vals
@@ -119,7 +119,7 @@ end
 LinearAlgebra.lmul!(D::Diagonal, A::SparseMatrixCOO) = loperation!(*, D, A)
 LinearAlgebra.ldiv!(D::Diagonal, A::SparseMatrixCOO) = loperation!(/, D, A)
 
-function roperation!(operation::Function, A::SparseMatrixCOO, D::Diagonal)
+function roperation!(operation::Function, A::SparseMatrixCOO{T}, D::Diagonal{T}) where {T}
   @assert size(D, 1) == size(A, 2)
   nnz_A = nnz(A)
   Acols, Avals = A.cols, A.vals
@@ -170,8 +170,15 @@ function uniform_scaling_to_coo(λI::UniformScaling, n::Int, T::DataType)
   return SparseMatrixCOO(n, n, Vector(1:n), Vector(1:n), fill(T(λ), n))
 end
 
-hcat(A::SparseMatrixCOO{T}, λI::UniformScaling) where {T} = hcat(A, uniform_scaling_to_coo(λI, size(A, 1), T))
-hcat(λI::UniformScaling, A::SparseMatrixCOO{T}) where {T} = hcat(uniform_scaling_to_coo(λI, size(A, 1), T), A)
+function hcat(A::SparseMatrixCOO{T}, λI::UniformScaling) where {T}
+  m, n = size(A)
+  return SparseMatrixCOO(m, n + m, [A.rows; 1:m], [A.cols; (n + 1): (m + n)], [A.vals; fill(λI.λ, m)])
+end
+
+function hcat(λI::UniformScaling, A::SparseMatrixCOO{T}) where {T}
+  m, n = size(A)
+  return SparseMatrixCOO(m, n + m, [1:m; A.rows], [1:m; A.cols .+ m], [fill(λI.λ, m); A.vals])
+end
 
 function hcat(As::AbstractSparseMatrixCOO...)
   A = As[1]
