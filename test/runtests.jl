@@ -241,10 +241,10 @@ end
   @test norm(csc_vcat - coo_vcat) ≤ sqrt(eps()) * norm(csc_vcat)
   @test issorted(coo_vcat.cols)
 
-  csc_hcat = [A 3.0*I]
-  coo_hcat = [SparseMatrixCOO(A) 3.0*I]
-  csc_vcat = [A; 3.0*I]
-  coo_vcat = [SparseMatrixCOO(A); 3.0*I]
+  csc_hcat = [A 3.0 * I]
+  coo_hcat = [SparseMatrixCOO(A) 3.0 * I]
+  csc_vcat = [A; 3.0 * I]
+  coo_vcat = [SparseMatrixCOO(A); 3.0 * I]
   @test norm(csc_hcat - coo_hcat) ≤ sqrt(eps()) * norm(csc_hcat)
   @test norm(csc_vcat - coo_vcat) ≤ sqrt(eps()) * norm(csc_vcat)
   @test issorted(coo_vcat.cols)
@@ -296,7 +296,7 @@ end
   maximum!(abs, v_coo2', A_coo)
   @test norm(v2 - v_coo2) ≤ sqrt(eps()) * norm(v2)
 
-  As = Symmetric(A*A')
+  As = Symmetric(A * A')
   As_coo = Symmetric(SparseMatrixCOO(As.data))
   v .= 0
   v_coo .= 0
@@ -309,7 +309,7 @@ end
   maximum!(abs, v_coo', As_coo)
   @test norm(v - v_coo) ≤ sqrt(eps()) * norm(v)
 
-  As = Symmetric(tril(A*A'), :L)
+  As = Symmetric(tril(A * A'), :L)
   As_coo = Symmetric(SparseMatrixCOO(As.data), :L)
   v .= 0
   v_coo .= 0
