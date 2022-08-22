@@ -172,7 +172,13 @@ end
 
 function hcat(A::SparseMatrixCOO{T}, λI::UniformScaling) where {T}
   m, n = size(A)
-  return SparseMatrixCOO(m, n + m, [A.rows; 1:m], [A.cols; (n + 1): (m + n)], [A.vals; fill(λI.λ, m)])
+  return SparseMatrixCOO(
+    m,
+    n + m,
+    [A.rows; 1:m],
+    [A.cols; (n + 1):(m + n)],
+    [A.vals; fill(λI.λ, m)],
+  )
 end
 
 function hcat(λI::UniformScaling, A::SparseMatrixCOO{T}) where {T}
@@ -220,8 +226,10 @@ function vcat(A::SparseMatrixCOO{T, I}, B::SparseMatrixCOO{T, I}) where {T, I}
   return SparseMatrixCOO(mA + mB, nA, rows, cols, vals)
 end
 
-vcat(A::SparseMatrixCOO{T}, λI::UniformScaling) where {T} = vcat(A, uniform_scaling_to_coo(λI, size(A, 2), T))
-vcat(λI::UniformScaling, A::SparseMatrixCOO{T}) where {T} = vcat(uniform_scaling_to_coo(λI, size(A, 2), T), A)
+vcat(A::SparseMatrixCOO{T}, λI::UniformScaling) where {T} =
+  vcat(A, uniform_scaling_to_coo(λI, size(A, 2), T))
+vcat(λI::UniformScaling, A::SparseMatrixCOO{T}) where {T} =
+  vcat(uniform_scaling_to_coo(λI, size(A, 2), T), A)
 
 function vcat(As::AbstractSparseMatrixCOO...)
   A = As[1]
@@ -320,11 +328,7 @@ function LinearAlgebra.maximum!(
   v .= replace_if_minusinf.(v, replacement)
 end
 
-
-function maximum_sym_vec!(f::Function,
-  v::AbstractVector{T},
-  A::SparseMatrixCOO{T},
-) where {T}
+function maximum_sym_vec!(f::Function, v::AbstractVector{T}, A::SparseMatrixCOO{T}) where {T}
   nnz_A = nnz(A)
   Arows, Acols, Avals = A.rows, A.cols, A.vals
   @assert length(v) == size(A, 1)
