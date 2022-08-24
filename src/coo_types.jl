@@ -228,6 +228,15 @@ function Matrix(S::AbstractSparseMatrixCOO{Tv}) where {Tv}
 end
 Array(S::AbstractSparseMatrixCOO) = Matrix(S)
 
+function SparseMatrixCOO{Tv, Ti}(m::AbstractSparseMatrixCOO) where {Tv, Ti}
+  eltypeTirows = Vector{Ti}(rows(m))
+  eltypeTicols = Vector{Ti}(columns(m))
+  eltypeTvvals = Vector{Tv}(nonzeros(m))
+  return SparseMatrixCOO(size(m)..., eltypeTirows, eltypeTicols, eltypeTvvals)
+end
+
+import Base.convert
+
 convert(T::Type{<:AbstractSparseMatrixCOO}, m::AbstractMatrix) = m isa T ? m : T(m)
 
 convert(T::Type{<:Diagonal}, m::AbstractSparseMatrixCOO) =

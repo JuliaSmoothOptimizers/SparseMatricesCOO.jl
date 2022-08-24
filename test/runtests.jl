@@ -63,6 +63,20 @@ end
   @test all(Avs .== Bvs)
 end
 
+@testset "Conversion from another SparseMatrixCOO" begin
+  T = Float64
+  A = sprand(T, 10, 15, 0.4)
+  B = SparseMatrixCOO(A)
+  B32_1 = convert(SparseMatrixCOO{Float32, Int}, B)
+  @test typeof(B32_1) == SparseMatrixCOO{Float32, Int}
+  @test typeof(B32_1.vals) == Vector{Float32}
+  B32_2 = convert(SparseMatrixCOO{Float32, Int32}, B)
+  @test typeof(B32_2) == SparseMatrixCOO{Float32, Int32}
+  @test typeof(B32_2.rows) == Vector{Int32}
+  @test typeof(B32_2.cols) == Vector{Int32}
+  @test typeof(B32_2.vals) == Vector{Float32}
+end
+
 @testset "3-arg Matrix multiply tests" begin
   m, n = 10, 15
   A = sprand(m, n, 0.4)
