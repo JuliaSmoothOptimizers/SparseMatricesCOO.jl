@@ -4,6 +4,8 @@ authors:
   - given-names: Dominique
     family-names: Orban
     orcid: 'https://orcid.org/0000-0002-8017-7687'
+  - given-names: Geoffroy
+    family-names: Leconte
   - given-names:
     family-names: contributors
 title: "SparseMatricesCOO.jl: Sparse matrices in coordinate format for Julia"
