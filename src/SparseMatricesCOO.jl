@@ -14,13 +14,16 @@ using UnicodePlots
 using MKL_jll
 
 function __init__()
-    ccall((:MKL_Set_Interface_Layer, libmkl_rt), Cint, (Cint,), Base.USE_BLAS64 ? 1 : 0)
+  ccall((:MKL_Set_Interface_Layer, libmkl_rt), Cint, (Cint,), Base.USE_BLAS64 ? 1 : 0)
 end
 
 include("coo_utils.jl")
 include("coo_types.jl")
 include("coo_linalg.jl")
-include("coo_mkl_wrapper.jl")
-include("coo_mkl_interface.jl")
+
+if Sys.islinux() || Sys.isapple() || Sys.iswindows()
+  include("coo_mkl_wrapper.jl")
+  include("coo_mkl_interface.jl")
+end
 
 end # module

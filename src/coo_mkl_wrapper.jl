@@ -1,4 +1,4 @@
-import LinearAlgebra.BlasInt
+import LinearAlgebra: BlasInt, checksquare
 
 matdescra(A::LowerTriangular) = "TLNF"
 matdescra(A::UpperTriangular) = "TUNF"
@@ -49,17 +49,17 @@ for (mv, sv, symv, trsv, mm, sm, T) in (("mkl_scoomv", "mkl_scoosv", "mkl_scoosy
 
     function coosymv!(uplo::Char, A::SparseMatrixCOO{$T, BlasInt}, x::StridedVector{$T}, y::StridedVector{$T})
       checksquare(A)
-      check_uplo(transa)
+      check_uplo(uplo)
       ccall(($symv, libmkl_rt),
              Cvoid,
             (Ref{UInt8}, Ref{BlasInt}, Ptr{$T}, Ptr{BlasInt}, Ptr{BlasInt}, Ref{BlasInt}, Ptr{$T}, Ptr{$T}),
-             transa    , A.m         , A.vals , A.rows      , A.cols      , nnz(A)      , x      , y      )
+             uplo      , A.m         , A.vals , A.rows      , A.cols      , nnz(A)      , x      , y      )
       return y
     end
 
     function cootrsv!(uplo::Char, transa::Char, diag::Char, A::SparseMatrixCOO{$T, BlasInt}, x::StridedVector{$T}, y::StridedVector{$T})
       checksquare(A)
-      check_uplo(transa)
+      check_uplo(uplo)
       check_transa(transa)
       check_diag(transa)
       ccall(($trsv, libmkl_rt),

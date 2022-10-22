@@ -2,8 +2,7 @@ for T in (Float32, Float64, ComplexF32, ComplexF64)
 
   op_wrappers = ((identity                     , 'N', identity          ),
                  (M -> :(Transpose{<:$T, <:$M}), 'T', A -> :(parent($A))),
-                 (M -> :(Adjoint{<:$T, <:$M})  , 'C', A -> :(parent($A)))
-  )
+                 (M -> :(Adjoint{<:$T, <:$M})  , 'C', A -> :(parent($A))))
 
   for (wrapa, transa, unwrapa) in op_wrappers
     TypeA = wrapa(:(SparseMatrixCOO{$T, $BlasInt}))
@@ -34,6 +33,27 @@ for T in (Float32, Float64, ComplexF32, ComplexF64)
         n == k || throw(DimensionMismatch())
         C = Matrix{$T}(undef, m, p)
         mul!(C, A, B)
+      end
+    end
+  end
+end
+
+for T in (Float32, Float64, ComplexF32, ComplexF64)
+
+  op_wrappers = ((M -> :(Symmetric{<:$T, <:$M}), A -> :(parent($A))),
+                 (M -> :(Hermitian{<:$T, <:$M}), A -> :(parent($A))))
+
+  for (wrapa, unwrapa) in op_wrappers
+    TypeA = wrapa(:(SparseMatrixCOO{$T, $BlasInt}))
+
+    @eval begin
+      LinearAlgebra.mul!(y::StridedVector{$T}, A::$TypeA, x::StridedVector{$T}) = coosymv!(A.uplo, $(unwrapa(:A)), x, y)
+
+      function LinearAlgebra.:(*)(A::$TypeA, x::StridedVector{$T})
+        m, n = size(A)
+        length(x) == n || throw(DimensionMismatch())
+        y = Vector{$T}(undef, m)
+        mul!(y, A, x)
       end
     end
   end
