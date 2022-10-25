@@ -73,7 +73,8 @@ end
     @test y_csc ≈ y_coo
   end
 
-  for wrappera in [Symmetric, Adjoint]
+  for wrappera in [Symmetric, Hermitian]
+    wrappera == Hermitian && T <: Complex && continue
     A_csc = sprand(T, 10, 10, 0.2)
     A_csc = A_csc + A_csc'
     A_coo = SparseMatrixCOO(A_csc)
@@ -96,7 +97,8 @@ end
     end
   end
 
-  for wrappera in [Symmetric, Adjoint]
+  for wrappera in [Symmetric, Hermitian]
+    wrappera == Hermitian && T <: Complex && continue
     A_csc = sprand(T, 10, 10, 0.2)
     A_csc = A_csc + A_csc'
     A_coo = SparseMatrixCOO(A_csc)

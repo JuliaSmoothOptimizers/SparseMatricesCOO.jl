@@ -18,10 +18,6 @@ function check_uplo(uplo::Char)
   uplo == 'L' ||  uplo == 'U' || error("uplo is '$uplo', must be L' or 'U'")
 end
 
-function check_diag(diag::Char)
-  diag == 'U' ||  diag == 'N' || error("diag is '$diag', must be U' or 'N'")
-end
-
 for (mv, sv, symv, mm, sm, csrcoo, T) in (("mkl_scoomv", "mkl_scoosv", "mkl_scoosymv", "mkl_scoomm", "mkl_scoosm", "mkl_scsrcoo", :Float32),
                                           ("mkl_dcoomv", "mkl_dcoosv", "mkl_dcoosymv", "mkl_dcoomm", "mkl_dcoosm", "mkl_dcsrcoo", :Float64),
                                           ("mkl_ccoomv", "mkl_ccoosv", "mkl_ccoosymv", "mkl_ccoomm", "mkl_ccoosm", "mkl_ccsrcoo", :ComplexF32),
