@@ -1,8 +1,8 @@
 for T in (Float32, Float64, ComplexF32, ComplexF64)
 
-  op_wrappers = ((identity                     , 'N', identity          ),
-                 (M -> :(Transpose{<:$T, <:$M}), 'T', A -> :(parent($A))),
-                 (M -> :(Adjoint{<:$T, <:$M})  , 'C', A -> :(parent($A))))
+  op_wrappers = ((identity                 , 'N', identity          ),
+                 (M -> :(Transpose{$T, $M}), 'T', A -> :(parent($A))),
+                 (M -> :(Adjoint{$T, $M})  , 'C', A -> :(parent($A))))
 
   for (wrapa, transa, unwrapa) in op_wrappers
     TypeA = wrapa(:(SparseMatrixCOO{$T, $BlasInt}))
@@ -26,22 +26,12 @@ for T in (Float32, Float64, ComplexF32, ComplexF64)
         y = Vector{$T}(undef, m)
         mul!(y, A, x)
       end
-
-      function LinearAlgebra.:(*)(A::$TypeA, B::StridedMatrix{$T})
-        m, n = size(A)
-        k, p = size(B)
-        n == k || throw(DimensionMismatch())
-        C = Matrix{$T}(undef, m, p)
-        mul!(C, A, B)
-      end
     end
   end
-end
 
-for T in (Float32, Float64, ComplexF32, ComplexF64)
-
-  op_wrappers = ((M -> :(Symmetric{<:$T, <:$M}), A -> :(parent($A))),
-                 (M -> :(Hermitian{<:$T, <:$M}), A -> :(parent($A))))
+  op_symmetric = (M -> :(Symmetric{$T, $M}), A -> :(parent($A)))
+  op_hermitian = (M -> :(Hermitian{$T, $M}), A -> :(parent($A)))
+  op_wrappers = T <: Real ? (op_symmetric, op_hermitian) : (op_symmetric,)
 
   for (wrapa, unwrapa) in op_wrappers
     TypeA = wrapa(:(SparseMatrixCOO{$T, $BlasInt}))
@@ -53,8 +43,50 @@ for T in (Float32, Float64, ComplexF32, ComplexF64)
         m, n = size(A)
         length(x) == n || throw(DimensionMismatch())
         y = Vector{$T}(undef, m)
-        mul!(y, A, x)
+        mul!(y, parent(A), x)
       end
     end
   end
 end
+
+for (triangle, matdescra) in ((:LowerTriangular, "TLNF"),
+                              (:UnitLowerTriangular, "TLUF"),
+                              (:UpperTriangular, "TUNF"),
+                              (:UnitUpperTriangular, "TUUF"))
+
+  @eval begin
+    LinearAlgebra.ldiv!(x::StridedVector{T},
+                        A::$triangle{T,SparseMatrixCOO{T, BlasInt}},
+                        y::StridedVector{T}) where {T <: BlasFloat} =
+      coosv!('N', one(T), $matdescra, parent(A), x, y)
+
+    LinearAlgebra.ldiv!(X::StridedMatrix{T},
+                        A::$triangle{T,SparseMatrixCOO{T, BlasInt}},
+                        Y::StridedMatrix{T}) where {T <: BlasFloat} =
+      coosm!('N', one(T), $matdescra, parent(A), X, Y)
+  end
+end
+
+for (triangle, matdescra) in ((:LowerTriangular, "TUNF"),
+                              (:UnitLowerTriangular, "TUUF"),
+                              (:UpperTriangular, "TLNF"),
+                              (:UnitUpperTriangular, "TLUF"))
+
+  for (opa, transa) in ((:Transpose, 'T'),
+                        (:Adjoint, 'C'))
+    @eval begin
+      LinearAlgebra.ldiv!(x::StridedVector{T},
+                          A::$triangle{T,$opa{T,SparseMatrixCOO{T, BlasInt}}},
+                          y::StridedVector{T}) where {T <: BlasFloat} =
+        coosv!($transa, one(T), $matdescra, parent(parent(A)), x, y)
+
+      LinearAlgebra.ldiv!(x::StridedMatrix{T},
+                          A::$triangle{T,$opa{T,SparseMatrixCOO{T, BlasInt}}},
+                          y::StridedMatrix{T}) where {T <: BlasFloat} =
+        coosm!($transa, one(T), $matdescra, parent(parent(A)), x, y)
+    end
+  end
+end
+
+# SparseMatrixCOO(A::SparseMatrixCSC{T, BlasInt}) where {T <: BlasFloat} = csc_coo(A)
+# SparseMatrixCSC(A::SparseMatrixCOO{T, BlasInt}) where {T <: BlasFloat} = coo_csc(A)

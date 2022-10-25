@@ -14,7 +14,9 @@ using UnicodePlots
 using MKL_jll
 
 function __init__()
-  ccall((:MKL_Set_Interface_Layer, libmkl_rt), Cint, (Cint,), Base.USE_BLAS64 ? 1 : 0)
+  if Sys.islinux() || Sys.isapple() || Sys.iswindows()
+    ccall((:MKL_Set_Interface_Layer, libmkl_rt), Cint, (Cint,), Base.USE_BLAS64 ? 1 : 0)
+  end
 end
 
 include("coo_utils.jl")
