@@ -7,7 +7,6 @@ makedocs(;
   modules = [SparseMatricesCOO],
   doctest = true,
   linkcheck = false,
-  strict = true,
   authors = "Dominique Orban <dominique.orban@gmail.com> and contributors",
   repo = "https://github.com/JuliaSmoothOptimizers/SparseMatricesCOO.jl/blob/{commit}{path}#{line}",
   sitename = "SparseMatricesCOO.jl",
