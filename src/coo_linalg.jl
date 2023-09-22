@@ -12,7 +12,14 @@ function coo_mul!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMatrix, α,
   end
 end
 
-for T in (AbstractVector, AbstractMatrix)
+for T in (
+  AbstractVector,
+  AbstractMatrix,
+  Union{Bidiagonal, SymTridiagonal, Tridiagonal},
+  Diagonal,
+  Transpose{<:Any, <:AbstractVecOrMat},
+  Adjoint{<:Any, <:AbstractVecOrMat},
+)
   @eval function LinearAlgebra.mul!(
     C::StridedVecOrMat,
     A::AbstractSparseMatrixCOO,
@@ -46,7 +53,14 @@ function coo_adjtrans_mul!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMa
 end
 
 for (T, t) in ((Adjoint, adjoint), (Transpose, transpose))
-  for Tb in (AbstractVector, AbstractMatrix)
+  for Tb in (
+    AbstractVector,
+    AbstractMatrix,
+    Union{Bidiagonal, SymTridiagonal, Tridiagonal},
+    Diagonal,
+    Transpose{<:Any, <:AbstractVecOrMat},
+    Adjoint{<:Any, <:AbstractVecOrMat},
+  )
     @eval function LinearAlgebra.mul!(
       C::StridedVecOrMat,
       xA::$T{<:Any, <:AbstractSparseMatrixCOO},
@@ -90,7 +104,14 @@ function coo_sym_mul!(C::AbstractMatrix, Arows, Acols, Avals, B::AbstractMatrix,
 end
 
 for (T, t) in ((Hermitian, adjoint), (Symmetric, transpose))
-  for Tb in (AbstractVector, AbstractMatrix)
+  for Tb in (
+    AbstractVector,
+    AbstractMatrix,
+    Union{Bidiagonal, SymTridiagonal, Tridiagonal},
+    Diagonal,
+    Transpose{<:Any, <:AbstractVecOrMat},
+    Adjoint{<:Any, <:AbstractVecOrMat},
+  )
     @eval function LinearAlgebra.mul!(
       C::StridedVecOrMat,
       xA::$T{<:Any, <:AbstractSparseMatrixCOO},
