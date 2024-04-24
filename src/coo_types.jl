@@ -267,5 +267,10 @@ complex(S::SparseMatrixCOO) = SparseMatrixCOO(
 
 import Base.similar
 
-similar(S::SparseMatrixCOO) =
-  SparseMatrixCOO(size(S,1), size(S,2), similar(rows(S)),similar(columns(S)), similar(nonzeros(S)))
+similar(S::SparseMatrixCOO) = SparseMatrixCOO(
+  size(S, 1),
+  size(S, 2),
+  similar(rows(S)),
+  similar(columns(S)),
+  similar(nonzeros(S)),
+)
