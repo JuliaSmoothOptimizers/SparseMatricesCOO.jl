@@ -264,3 +264,8 @@ complex(S::SparseMatrixCOO) = SparseMatrixCOO(
   copy(columns(S)),
   complex(copy(nonzeros(S))),
 )
+
+import Base.similar
+
+similar(S::SparseMatrixCOO) =
+  SparseMatrixCOO(size(S,1), size(S,2), similar(rows(S)),similar(columns(S)), similar(nonzeros(S)))
