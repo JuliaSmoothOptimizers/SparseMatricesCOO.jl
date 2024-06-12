@@ -321,7 +321,7 @@ end
 +(D::Diagonal, A::SparseMatrixCOO) = A + D
 
 function Base.:+(A::SparseMatrixCOO{T1}, B::SparseMatrixCOO{T2}) where {T1<:Number, T2<:Number}
-  A.n == B.n || throw(ArgumentError("A and B must have the same number of rows"))
+  A.n == B.n || throw(DimensionMismatch())
   A.m == B.m || throw(ArgumentError("A and B must have the same number of columns"))
   
   T = promote_type(T1, T2)
