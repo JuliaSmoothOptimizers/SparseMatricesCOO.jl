@@ -268,7 +268,7 @@ complex(S::SparseMatrixCOO) = SparseMatrixCOO(
 import Base.similar
 
 function Base.similar(S::SparseMatrixCOO)
-  newcol = copyto!(similar(columns(S)), columns(S))
-  newrow = copyto!(similar(rows(S)), rows(S))
+  newcol = copy(columns(S))
+  newrow = copy(rows(S))
   SparseMatrixCOO(size(S,1), size(S,2), newrow, newcol, similar(nonzeros(S)))
 end
