@@ -270,5 +270,5 @@ import Base.similar
 function Base.similar(S::SparseMatrixCOO)
   newcol = copy(columns(S))
   newrow = copy(rows(S))
-  SparseMatrixCOO(size(S,1), size(S,2), newrow, newcol, similar(nonzeros(S)))
+  SparseMatrixCOO(size(S, 1), size(S, 2), newrow, newcol, similar(nonzeros(S)))
 end
