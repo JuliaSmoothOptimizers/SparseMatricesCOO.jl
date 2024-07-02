@@ -1,7 +1,7 @@
 name = "SparseMatricesCOO"
 uuid = "fa32481b-f100-4b48-8dc8-c62f61b13870"
 authors = ["Dominique Orban <dominique.orban@gmail.com> and contributors"]
-version = "0.2.2"
+version = "0.2.3"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
