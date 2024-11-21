@@ -14,4 +14,4 @@ jobs:
         with:
           version: '1'
       - name: Aqua.jl
-        run: julia --color=yes -e 'using Pkg; Pkg.add("Aqua"); Pkg.develop(path="."); using Aqua, SparseMatricesCOO; Aqua.test_all(SparseMatricesCOO, ambiguities=false); Aqua.test_ambiguities(SparseMatricesCOO)'
+        run: julia --color=yes -e 'using Pkg; Pkg.add("Aqua"); Pkg.develop(path="."); using Aqua, SparseMatricesCOO; Aqua.test_all(SparseMatricesCOO)'
