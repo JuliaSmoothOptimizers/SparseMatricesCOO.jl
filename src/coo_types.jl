@@ -7,7 +7,7 @@ Supertype for matrix in sparse coordinate format (COO).
 """
 abstract type AbstractSparseMatrixCOO{Tv, Ti <: Integer} <: AbstractSparseMatrix{Tv, Ti} end
 
-mutable struct SparseMatrixCOO{Tv, Ti <: Integer} <: AbstractSparseMatrixCOO{Tv, Ti}
+struct SparseMatrixCOO{Tv, Ti <: Integer} <: AbstractSparseMatrixCOO{Tv, Ti}
   m::Int
   n::Int
   rows::Vector{Ti}
