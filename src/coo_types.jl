@@ -149,7 +149,7 @@ function _goodbuffers(m, n, rows, cols, vals)
   (length(rows) == length(cols) == length(vals)) && all(1 .≤ rows .≤ m) && all(1 .≤ cols .≤ n)
 end
 
-function Matrix(S::AbstractSparseMatrixCOO{Tv}) where {Tv}
+function Base.Matrix(S::AbstractSparseMatrixCOO{Tv}) where {Tv}
   _checkbuffers(S)
   A = Matrix{Tv}(undef, size(S)...)
   fill!(A, zero(Tv))
@@ -159,7 +159,7 @@ function Matrix(S::AbstractSparseMatrixCOO{Tv}) where {Tv}
   end
   return A
 end
-Array(S::AbstractSparseMatrixCOO) = Matrix(S)
+Base.Array(S::AbstractSparseMatrixCOO) = Matrix(S)
 
 function SparseMatrixCOO{Tv, Ti}(m::AbstractSparseMatrixCOO) where {Tv, Ti}
   eltypeTirows = Vector{Ti}(rows(m))
