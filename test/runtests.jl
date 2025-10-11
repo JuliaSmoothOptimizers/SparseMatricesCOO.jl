@@ -293,6 +293,11 @@ end
   B_coo = D + A_coo
   @test norm(B_csc - B_coo) ≤ sqrt(eps()) * norm(B_csc)
   @test issorted(B_coo.cols)
+
+  B = sprand(Float64, 20, 20, 0.1)
+  C_csc = A + B
+  C_coo = A_coo + SparseMatrixCOO(B)
+  @test norm(C_csc - C_coo) ≤ sqrt(eps()) * norm(C_csc)
 end
 
 @testset "row/col reduce" begin
@@ -335,4 +340,14 @@ end
   maximum!(abs, v', As)
   maximum!(abs, v_coo', As_coo)
   @test norm(v - v_coo) ≤ sqrt(eps()) * norm(v)
+end
+
+@testset "Kronecker product" begin
+  A = sprand(Float64, 10, 15, 0.2)
+  B = sprand(Float64, 5, 7, 0.3)
+  A_coo = SparseMatrixCOO(A)
+  B_coo = SparseMatrixCOO(B)
+  C = kron(A, B)
+  C_coo = kron(A_coo, B_coo)
+  @test norm(C - C_coo) ≤ sqrt(eps()) * norm(C)
 end
