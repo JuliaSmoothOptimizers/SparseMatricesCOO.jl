@@ -320,6 +320,64 @@ end
 
 +(D::Diagonal, A::SparseMatrixCOO) = A + D
 
+function Base.:+(A::SparseMatrixCOO{T1}, B::SparseMatrixCOO{T2}) where {T1<:Number, T2<:Number}
+  A.n == B.n || throw(DimensionMismatch())
+  A.m == B.m || throw(DimensionMismatch())
+  
+  T = promote_type(T1, T2)
+  
+  rowval_colvalA = collect(zip(A.rows, A.cols))
+  rowval_colvalB = collect(zip(B.rows, B.cols))
+
+  rowval_colval = union(rowval_colvalA, rowval_colvalB)
+  rowval = first.(rowval_colval)
+  colval = last.(rowval_colval)
+
+  nzval = similar(rowval, T)
+  @inbounds for i in eachindex(rowval)
+      nzval[i] = zero(T)
+      for j in eachindex(rowval_colvalA)
+          if rowval_colvalA[j] == rowval_colval[i]
+              nzval[i] += A.vals[j]
+              break
+          end
+      end
+      for j in eachindex(rowval_colvalB)
+          if rowval_colvalB[j] == rowval_colval[i]
+              nzval[i] += B.vals[j]
+              break
+          end
+      end
+  end
+
+  return SparseMatrixCOO(A.m, A.n, rowval, colval, nzval)
+end
+
+function LinearAlgebra.kron(A::SparseMatrixCOO, B::SparseMatrixCOO)
+  mA, nA = size(A)
+  mB, nB = size(B)
+  out_shape = (mA * mB, nA * nB)
+  Annz = nnz(A)
+  Bnnz = nnz(B)
+
+  if Annz == 0 || Bnnz == 0
+      return SparseMatrixCOO(Int[], Int[], T[], out_shape...)
+  end
+
+  row = (A.rows .- 1) .* mB
+  row = repeat(row, inner = Bnnz)
+  col = (A.cols .- 1) .* nB
+  col = repeat(col, inner = Bnnz)
+  data = repeat(A.vals, inner = Bnnz)
+
+  row .+= repeat(B.rows, outer = Annz)
+  col .+= repeat(B.cols, outer = Annz)
+
+  data .*= repeat(B.vals, outer = Annz)
+
+  return SparseMatrixCOO(out_shape[1], out_shape[2], row, col, data)
+end
+
 # maximum! functions
 replace_if_minusinf(val::T, replacement::T) where {T} = (val == -T(Inf)) ? replacement : val
 function LinearAlgebra.maximum!(f::Function, v::AbstractVector{T}, A::SparseMatrixCOO{T}) where {T}
